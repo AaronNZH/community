@@ -1,5 +1,6 @@
 package com.nzh.community.Controller;
 
+import com.nzh.community.dto.PaginationDTO;
 import com.nzh.community.dto.QuestionDTO;
 import com.nzh.community.mapper.QuestionMapper;
 import com.nzh.community.mapper.UserMapper;
@@ -7,10 +8,12 @@ import com.nzh.community.model.Question;
 import com.nzh.community.model.User;
 
 import com.nzh.community.service.QuestionService;
+import org.omg.PortableInterceptor.INACTIVE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +30,9 @@ public class IndexController {
 
     @GetMapping("/")
     public String index(HttpServletRequest request,
-                        Model model){
+                        Model model,
+                        @RequestParam(name = "page", defaultValue = "1") Integer page,
+                        @RequestParam(name = "size", defaultValue = "5") Integer size){
 
         Cookie[] cookies = request.getCookies();
         if(cookies != null && cookies.length != 0){
@@ -43,8 +48,8 @@ public class IndexController {
             }
         }
 
-        List<QuestionDTO> questionDTOList = questionService.list();
-        model.addAttribute("questions", questionDTOList);
+        PaginationDTO pagination = questionService.list(page, size);
+        model.addAttribute("pagination", pagination);
 
         return "index";
     }
