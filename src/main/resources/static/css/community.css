@@ -26,3 +26,18 @@ body{
 .profile .section{
     margin-top: 15px;
 }
+
+.community-menu{
+    font-size: 13px;
+    color: #999999;
+}
+
+.jumbotron{
+    text-align: center;
+    background-color: lightgrey;
+    border-radius: 20px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+}

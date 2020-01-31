@@ -25,3 +25,9 @@
 [Flyway](https://flywaydb.org/getstarted/firststeps/maven)
 
 [lombok](https://www.projectlombok.org)
+
+## 脚本
+~~~bash
+mvn flyway:migrate
+mvn -Dmybatis.generator.overwrite=true mybatis-generator:generate
+~~~
