@@ -1,13 +1,12 @@
 package com.nzh.community.Controller;
 
+import com.nzh.community.cache.TagCache;
 import com.nzh.community.dto.QuestionDTO;
-import com.nzh.community.mapper.QuestionMapper;
 import com.nzh.community.model.Question;
 import com.nzh.community.model.User;
-
 import com.nzh.community.service.QuestionService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.EnableMBeanExport;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,9 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 public class PublishController {
 
     @Autowired
-    private QuestionMapper questionMapper;
-
-    @Autowired
     private QuestionService questionService;
 
     @GetMapping("/publish/{id}")
@@ -34,11 +30,13 @@ public class PublishController {
         model.addAttribute("description", question.getDescription());
         model.addAttribute("tag", question.getTag());
         model.addAttribute("id", question.getId());
+        model.addAttribute("tags", TagCache.get());
         return "publish";
     }
 
     @GetMapping("/publish")
-    public String publish(){
+    public String publish(Model model){
+        model.addAttribute("tags", TagCache.get());
         return "publish";
     }
 
@@ -55,6 +53,8 @@ public class PublishController {
         model.addAttribute("title", title);
         model.addAttribute("description", description);
         model.addAttribute("tag", tag);
+        model.addAttribute("tags", TagCache.get());
+
 
         if(title == null || title.equals("")){
             model.addAttribute("error", "标题不能为空");
@@ -68,6 +68,11 @@ public class PublishController {
             model.addAttribute("error", "标签不能为空");
             return "publish";
         }
+        String invalid = TagCache.filterInvalid(tag);
+        if (StringUtils.isNotBlank(invalid)){
+            model.addAttribute("error", "输入非法标签：" + invalid);
+            return "publish";
+        }
 
         User user = (User)request.getSession().getAttribute("user");
         if(user == null){
@@ -78,7 +83,7 @@ public class PublishController {
         Question question = new Question();
         question.setTitle(title);
         question.setDescription(description);
-        question.setTag(tag);
+        question.setTag(tag.replace("，", ",").replaceAll(","+"\\s+", ","));
         question.setCreator(user.getId());
         question.setId(id);
         question.setViewCount(0);

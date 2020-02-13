@@ -1,12 +1,15 @@
 package com.nzh.community.Interceptor;
 
+import com.nzh.community.enums.NotificationStatusEnum;
 import com.nzh.community.mapper.UserMapper;
 import com.nzh.community.model.User;
 import com.nzh.community.model.UserExample;
+import com.nzh.community.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -19,8 +22,16 @@ public class SessionInterceptor implements HandlerInterceptor {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler){
+        // 过滤静态资源的拦截
+        if (handler instanceof ResourceHttpRequestHandler){
+            return true;
+        }
+
         Cookie[] cookies = request.getCookies();
         if(cookies != null && cookies.length != 0){
             for(Cookie cookie : cookies){
@@ -31,6 +42,8 @@ public class SessionInterceptor implements HandlerInterceptor {
                     List<User> users = userMapper.selectByExample(userExample);
                     if(users.size() != 0){
                         request.getSession().setAttribute("user", users.get(0));
+                        Long unreadCount = notificationService.unreadCount(users.get(0).getId());
+                        request.getSession().setAttribute("unreadCount", unreadCount);
                     }
                     break;
                 }
