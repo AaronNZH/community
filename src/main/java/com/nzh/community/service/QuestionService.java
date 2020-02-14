@@ -2,6 +2,7 @@ package com.nzh.community.service;
 
 import com.nzh.community.dto.PaginationDTO;
 import com.nzh.community.dto.QuestionDTO;
+import com.nzh.community.dto.QuestionQueryDTO;
 import com.nzh.community.exception.CustomizeErrorCode;
 import com.nzh.community.exception.CustomizeException;
 import com.nzh.community.mapper.QuestionExtMapper;
@@ -17,10 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Service
 public class QuestionService {
@@ -34,10 +35,19 @@ public class QuestionService {
     @Autowired
     private QuestionExtMapper questionExtMapper;
 
-    public PaginationDTO list(Integer page, Integer size) {
+    public PaginationDTO list(String search, Integer page, Integer size) {
+
+        if (!StringUtils.isBlank(search)){
+            String []tags = StringUtils.split(search, " ");
+            search = String.join("|", tags);
+        }
+
         PaginationDTO paginationDTO = new PaginationDTO();
         Integer totalPage;
-        Integer totalCount =  (int) questionMapper.countByExample(new QuestionExample());
+
+        QuestionQueryDTO questionQueryDTO = new QuestionQueryDTO();
+        questionQueryDTO.setSearch(search);
+        Integer totalCount = questionExtMapper.countBySearch(questionQueryDTO);
 
         if(totalCount % size == 0){
             totalPage = totalCount / size;
@@ -56,11 +66,12 @@ public class QuestionService {
         Integer offset = size * (page - 1);
         if(offset < 0)
             offset = 0;
-        QuestionExample questionExample = new QuestionExample();
-        questionExample.setOrderByClause("gmt_create desc");
-        List<Question> questions = questionMapper.selectByExampleWithRowbounds(questionExample, new RowBounds(offset, size));
-        List<QuestionDTO> questionDTOList = new ArrayList<>();
 
+        questionQueryDTO.setSize(size);
+        questionQueryDTO.setPage(offset);
+        List<Question> questions = questionExtMapper.selectBySearch(questionQueryDTO);
+
+        List<QuestionDTO> questionDTOList = new ArrayList<>();
         for(Question question : questions){
             User user = userMapper.selectByPrimaryKey(question.getCreator());
             QuestionDTO questionDTO = new QuestionDTO();
@@ -163,7 +174,7 @@ public class QuestionService {
     }
 
     public List<QuestionDTO> selectRelated(QuestionDTO queryDTO) {
-        if (StringUtils.isBlank(queryDTO.getTag())){
+        if (isBlank(queryDTO.getTag())){
             return new ArrayList<>();
         }
 
