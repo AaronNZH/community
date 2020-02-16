@@ -4,6 +4,7 @@ import com.nzh.community.dto.FileDTO;
 import com.nzh.community.exception.CustomizeErrorCode;
 import com.nzh.community.exception.CustomizeException;
 import com.nzh.community.provider.AliyunProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Objects;
 
+@Slf4j
 @Controller
 public class FileController {
 
@@ -33,6 +35,7 @@ public class FileController {
             fileDTO.setUrl(url);
             fileDTO.setSuccess(1);
         } catch (IOException e){
+            log.error("upload get error, {}", fileDTO);
             e.printStackTrace();
         }
 

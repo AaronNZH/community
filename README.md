@@ -1,5 +1,25 @@
 ## 振华的社区
 
+## 部署
+### 依赖
+- Git
+- JDK
+- Maven
+- Mysql
+## 步骤
+- apt update
+- apt install git
+- apt install maven
+- mkdir App
+- cd App
+- git clone https://github.com/AaronNZH/community.git
+- cd community
+- mvn compile package
+- cp src/main/resources/application.properties src/main/resources/application-production.properties
+- mvn package
+- java -jar -Dspring.profiles.active=production target/community-0.0.1-SNAPSHOT.jar
+
+
 ## 资料
 [Spring 文档](https://spring.io/guides)
 
